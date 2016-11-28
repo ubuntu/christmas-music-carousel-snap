@@ -10,3 +10,13 @@ description: |
   for now.
 grade: stable
 confinement: devmode
+
+apps:
+  timidity:
+    command: timidity-handler -Os -iA
+
+parts:
+  timidity:
+    source: timidity-scripts
+    plugin: dump
+    stage-packages: [alsa-utils, timidity]
