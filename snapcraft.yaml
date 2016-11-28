@@ -1,0 +1,12 @@
+name: christmas-music-carousel
+version: '1.0'
+summary: Play midi christmas music and connect to your Pi to display leds!
+description: |
+  This snap plays midi christmas music. You can select your own songs or play
+  the default carousel selection via its embedded synthetizer.
+  It can as well forward events via the network to a raspberry pi with piglow
+  to light leds in sync with the music.
+  /!\ This snap won't work on any board where alsa isn't installed by default
+  for now.
+grade: stable
+confinement: devmode
