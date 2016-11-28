@@ -13,7 +13,7 @@ confinement: devmode
 
 apps:
   timidity:
-    command: timidity-handler -Os -iA
+    command: timidity-handler timidity -Os -iA
 
 parts:
   timidity:

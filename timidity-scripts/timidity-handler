@@ -9,4 +9,4 @@ mount --bind /var/lib/snapd/hostfs/usr /usr
 # run connector in background
 $(dirname $0)/timidity-connect &
 
-exec timidity "$@"
+exec "$@"
