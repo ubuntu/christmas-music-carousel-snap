@@ -1,0 +1,12 @@
+#!/bin/sh
+
+
+# prepare the alsa environments by mounting /usr from the hostfs (alsa.conf
+# can be overriden by hardcoding paths at build times, but alsa modules paths
+# are harcoded at build time. pulseaudio forwarding libs thus is not accessible
+mount --bind /var/lib/snapd/hostfs/usr /usr
+
+# run connector in background
+$(dirname $0)/timidity-connect &
+
+exec timidity "$@"
