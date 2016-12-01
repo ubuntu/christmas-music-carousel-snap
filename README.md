@@ -1,2 +1,2 @@
 # christmas-music-carousel-snap
-Snap for a christmas music carousel
+Play a christmas music carousel from a selection or pre-selected music. Can connect to grpc-piglow snap on a raspberry pi.
