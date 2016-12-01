@@ -17,20 +17,19 @@ type serviceFn func(quit <-chan interface{}) error
 func main() {
 
 	// alsa operations
-	if os.Getenv("SUDO_UID") == "" {
-		log.Fatalln("This program needs to run as root, under sudo to get access to alsa from the snap")
-	}
 	// bindmount in current snap namespace /usr/share and /usr/lib directory for alsa conf and plugin not being relocatable
 	if os.Getenv("SNAP") != "" {
+		if os.Getenv("SUDO_UID") == "" {
+			log.Fatalln("This program needs to run as root, under sudo to get access to alsa from the snap")
+		}
 		if err := syscall.Mount("/var/lib/snapd/hostfs/usr/lib", "/usr/lib", "", syscall.MS_BIND, ""); err == nil {
 			log.Fatalf("Couldn't mount alsa directory: %v", err)
 		}
 		if err := syscall.Mount("/var/lib/snapd/hostfs/usr/share", "/usr/share", "", syscall.MS_BIND, ""); err == nil {
 			log.Fatalf("Couldn't mount alsa directory: %v", err)
 		}
+		// TODO: Drop priviledges?
 	}
-
-	// Drop priviledges?
 
 	musics := []string{"Foo", "Bar", "Baz", "Tralala"}
 
