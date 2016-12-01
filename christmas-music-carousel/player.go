@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os/exec"
 	"sync"
 	"time"
@@ -20,7 +19,7 @@ func play(midiport string, files []string, wg *sync.WaitGroup, quit <-chan inter
 				e := aplaymidi(midiport, f, quit)
 				select {
 				case <-quit:
-					log.Printf("Quit submitted")
+					Debug.Println("Quit player watcher as requested")
 					return
 				case <-time.After(time.Millisecond):
 				}
@@ -54,7 +53,7 @@ func aplaymidi(midiport string, filename string, quit <-chan interface{}) error 
 	go func() {
 		select {
 		case <-quit:
-			log.Printf("Forcing aplaymidi to stop")
+			Debug.Println("Forcing aplaymidi to stop")
 			cmd.Process.Kill()
 		case <-done:
 		}

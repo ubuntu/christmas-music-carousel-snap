@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"sync"
@@ -18,15 +16,19 @@ func main() {
 
 	// alsa operations
 	// bindmount in current snap namespace /usr/share and /usr/lib directory for alsa conf and plugin not being relocatable
+	// TODO: extract in a function returning err
 	if os.Getenv("SNAP") != "" {
 		if os.Getenv("SUDO_UID") == "" {
-			log.Fatalln("This program needs to run as root, under sudo to get access to alsa from the snap")
+			Error.Println("This program needs to run as root, under sudo to get access to alsa from the snap")
+			os.Exit(1)
 		}
 		if err := syscall.Mount("/var/lib/snapd/hostfs/usr/lib", "/usr/lib", "", syscall.MS_BIND, ""); err == nil {
-			log.Fatalf("Couldn't mount alsa directory: %v", err)
+			Error.Printf("Couldn't mount alsa directory: %v", err)
+			os.Exit(1)
 		}
 		if err := syscall.Mount("/var/lib/snapd/hostfs/usr/share", "/usr/share", "", syscall.MS_BIND, ""); err == nil {
-			log.Fatalf("Couldn't mount alsa directory: %v", err)
+			Error.Printf("Couldn't mount alsa directory: %v", err)
+			os.Exit(1)
 		}
 		// TODO: Drop priviledges?
 	}
@@ -44,22 +46,22 @@ func main() {
 
 	// connect timitidy to main input
 
-	// grab musics to play
+	// grab musics to play and shuffle them
 
 	// run aplay with one music at a time
 	eplayer := play(mainport, musics, wg, quit)
 
-	fmt.Println("All service started")
+	Debug.Println("All services started")
 mainloop:
 	for {
 		select {
 		case err := <-etimidity:
-			fmt.Printf("Fatal error in midi timidity backend player: %v\n", err)
+			Error.Printf("Fatal error in midi timidity backend player: %v\n", err)
 			close(quit)
 			rc = 1
 			break mainloop
 		case err := <-eplayer:
-			fmt.Printf("Fatal error in midi player: %v\n", err)
+			Error.Printf("Fatal error in midi player: %v\n", err)
 			close(quit)
 			rc = 1
 			break mainloop
@@ -85,24 +87,23 @@ func keepservicealive(f serviceFn, wg *sync.WaitGroup, quit <-chan interface{}) 
 			end := time.Now()
 			if end.Sub(start) < time.Duration(10*time.Second) {
 				nrestarts++
-				log.Printf("Failed a service quickly, increasing number of quick restarts: %d.", nrestarts)
+				Debug.Printf("Failed a service quickly, increasing number of quick restarts: %d.", nrestarts)
 			} else {
 				nrestarts = 1
-				log.Printf("Failed a service but after a long time, considering as first restart.")
+				Debug.Printf("Failed a service but after a long time, considering as first restart.")
 			}
 
 			select {
 			case <-quit:
-				log.Printf("Quit submitted")
+				Debug.Printf("Quit watch for service as submitted")
 				return
 			case <-time.After(time.Millisecond):
 				if nrestarts > 5 {
-					log.Printf("We did fail a service many times, returning an error")
+					Debug.Printf("We did fail a service many times, returning an error")
 					err <- e
 					return
 				}
 			}
-
 		}
 	}()
 	return err
@@ -121,7 +122,7 @@ func func1(quit <-chan interface{}) error {
 	go func() {
 		select {
 		case <-quit:
-			log.Printf("Forcing func1 to stop")
+			Debug.Println("Forcing func1 to stop")
 			cmd.Process.Kill()
 		case <-done:
 		}
