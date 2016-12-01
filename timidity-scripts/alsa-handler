@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# wee need those 2 to be exported to have pulseaudio binding to work
+export XAUTHORITY=/home/didrocks/.Xauthority
+export DISPLAY=:0
+
 # prepare the alsa environments by mounting /usr from the hostfs (alsa.conf
 # can be overriden by hardcoding paths at build times, but alsa modules paths
 # are harcoded at build time. pulseaudio forwarding libs thus is not accessible
