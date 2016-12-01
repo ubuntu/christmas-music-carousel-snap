@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"sync"
 	"syscall"
 	"time"
@@ -109,6 +110,23 @@ func keepservicealive(f serviceFn, wg *sync.WaitGroup, quit <-chan interface{}) 
 }
 
 func func1(quit <-chan interface{}) error {
-	time.Sleep(time.Second * 3)
-	return nil
+	cmd := exec.Command("sleep", "3")
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	// kill goroutine
+	done := make(chan interface{})
+	defer close(done)
+	go func() {
+		select {
+		case <-quit:
+			log.Printf("Forcing func1 to stop")
+			cmd.Process.Kill()
+		case <-done:
+		}
+	}()
+
+	return cmd.Wait()
 }

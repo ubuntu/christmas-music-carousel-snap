@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os/exec"
 	"sync"
 	"time"
 )
@@ -16,7 +17,13 @@ func play(midiport string, files []string, wg *sync.WaitGroup, quit <-chan inter
 		// play indefinitly the list of songs
 		for {
 			for _, f := range files {
-				e := aplaymidi(midiport, f)
+				e := aplaymidi(midiport, f, quit)
+				select {
+				case <-quit:
+					log.Printf("Quit submitted")
+					return
+				case <-time.After(time.Millisecond):
+				}
 				if e != nil {
 					err <- e
 					return
@@ -34,7 +41,24 @@ func play(midiport string, files []string, wg *sync.WaitGroup, quit <-chan inter
 	return err
 }
 
-func aplaymidi(midiport string, filename string) error {
-	time.Sleep(3)
-	return nil
+func aplaymidi(midiport string, filename string, quit <-chan interface{}) error {
+	cmd := exec.Command("sleep", "300")
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	// kill goroutine
+	done := make(chan interface{})
+	defer close(done)
+	go func() {
+		select {
+		case <-quit:
+			log.Printf("Forcing aplaymidi to stop")
+			cmd.Process.Kill()
+		case <-done:
+		}
+	}()
+
+	return cmd.Wait()
 }
