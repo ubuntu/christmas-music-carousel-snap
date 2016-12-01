@@ -3,7 +3,6 @@ package main
 import (
 	"os/exec"
 	"sync"
-	"time"
 )
 
 func play(midiport string, files []string, wg *sync.WaitGroup, quit <-chan interface{}) <-chan error {
@@ -17,21 +16,18 @@ func play(midiport string, files []string, wg *sync.WaitGroup, quit <-chan inter
 		for {
 			for _, f := range files {
 				e := aplaymidi(midiport, f, quit)
+
+				// check for quitting request
 				select {
 				case <-quit:
 					Debug.Println("Quit player watcher as requested")
 					return
-				case <-time.After(time.Millisecond):
+				default:
 				}
+
 				if e != nil {
 					err <- e
 					return
-				}
-				select {
-				case <-quit:
-					log.Printf("Quitting player as submitted")
-					return
-				case <-time.After(time.Millisecond):
 				}
 			}
 		}
@@ -47,7 +43,7 @@ func aplaymidi(midiport string, filename string, quit <-chan interface{}) error 
 		return err
 	}
 
-	// kill goroutine
+	// killer goroutine
 	done := make(chan interface{})
 	defer close(done)
 	go func() {

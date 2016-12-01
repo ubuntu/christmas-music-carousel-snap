@@ -85,24 +85,26 @@ func keepservicealive(f serviceFn, wg *sync.WaitGroup, quit <-chan interface{}) 
 			start := time.Now()
 			e := f(quit)
 			end := time.Now()
+
+			// check for quitting request
+			select {
+			case <-quit:
+				Debug.Printf("Quit watch for service as submitted")
+				return
+			default:
+				if nrestarts > 5 {
+					Debug.Printf("We did fail a service many times, returning an error")
+					err <- e
+					return
+				}
+			}
+
 			if end.Sub(start) < time.Duration(10*time.Second) {
 				nrestarts++
 				Debug.Printf("Failed a service quickly, increasing number of quick restarts: %d.", nrestarts)
 			} else {
 				nrestarts = 1
 				Debug.Printf("Failed a service but after a long time, considering as first restart.")
-			}
-
-			select {
-			case <-quit:
-				Debug.Printf("Quit watch for service as submitted")
-				return
-			case <-time.After(time.Millisecond):
-				if nrestarts > 5 {
-					Debug.Printf("We did fail a service many times, returning an error")
-					err <- e
-					return
-				}
 			}
 		}
 	}()
@@ -116,7 +118,7 @@ func func1(quit <-chan interface{}) error {
 		return err
 	}
 
-	// kill goroutine
+	// killer goroutine
 	done := make(chan interface{})
 	defer close(done)
 	go func() {
