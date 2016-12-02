@@ -57,9 +57,9 @@ func main() {
 	// run listen to music event client
 	pgready, epg := keepservicealive(func1, "Piglow Connector", mainPort, wg, quit)
 
-	// run timidity
-
-	// connect timitidy to main input
+	// run timidity and connect to main input
+	timitidyready, etimidity := keepservicealive(startTimidity, "Timidity", mainPort, wg, quit)
+	<-timitidyready
 
 	// give 2s for the piglow connection to be setup
 	select {
