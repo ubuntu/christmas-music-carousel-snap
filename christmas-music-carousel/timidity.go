@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"os/exec"
 	"sync"
 	"syscall"
@@ -10,6 +13,8 @@ import (
 // start and connect timidity daemon to port
 func startTimidity(port string, ready chan interface{}, quit <-chan interface{}) error {
 	cmd := exec.Command("timidity", "-Os", "-iA")
+	var errbuf bytes.Buffer
+	cmd.Stderr = &errbuf
 	e := cmd.Start()
 	if e != nil {
 		return e
@@ -44,7 +49,8 @@ func startTimidity(port string, ready chan interface{}, quit <-chan interface{})
 	go func() {
 		defer wg.Done()
 		Debug.Println("Starting timidity")
-		err <- cmd.Wait()
+		e := cmd.Wait()
+		err <- fmt.Errorf("%s: %v", errbuf.String(), e)
 		Debug.Println("Timidity stopped")
 	}()
 
@@ -71,10 +77,11 @@ func connectTimitidy(port string, ready chan interface{}, done <-chan interface{
 
 	n := 0
 	for {
-		_, e := exec.Command("aconnect", "-l").Output()
+		// get alsa ports
+		out, e := exec.Command("aconnect", "-l").CombinedOutput()
 		if e != nil {
 			if n > 4 {
-				err <- e
+				err <- errors.New(string(out))
 				return
 			}
 			n++

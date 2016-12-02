@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -186,6 +188,8 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 
 func func1(port string, ready chan interface{}, quit <-chan interface{}) error {
 	cmd := exec.Command("sleep", "3")
+	var errbuf bytes.Buffer
+	cmd.Stderr = &errbuf
 	// prevent Ctrl + C and other signals to get sent
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
@@ -207,5 +211,9 @@ func func1(port string, ready chan interface{}, quit <-chan interface{}) error {
 		}
 	}()
 
-	return cmd.Wait()
+	e := cmd.Wait()
+	if e != nil {
+		return fmt.Errorf("%s: %v", errbuf.String(), e)
+	}
+	return nil
 }
