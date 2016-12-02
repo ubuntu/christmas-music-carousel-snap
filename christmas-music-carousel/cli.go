@@ -73,14 +73,20 @@ mainloop:
 		case err := <-etimidity:
 			Error.Printf("Fatal error in midi timidity backend player: %v\n", err)
 			rc = 1
-			close(quit)
+			// TODO: handle quit better (racy)
+			if _, opened := <-quit; opened {
+				close(quit)
+			}
 			break mainloop
 		case err := <-eplayer:
 			if err != nil {
 				Error.Printf("Fatal error in midi player: %v\n", err)
 				rc = 1
 			}
-			close(quit)
+			// TODO: handle quit better (racy)
+			if _, opened := <-quit; opened {
+				close(quit)
+			}
 			break mainloop
 		case <-quit:
 			break mainloop
