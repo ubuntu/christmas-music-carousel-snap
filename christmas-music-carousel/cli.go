@@ -14,7 +14,7 @@ const (
 	maxRestart = 5
 )
 
-type serviceFn func(port string, ready chan<- interface{}, quit <-chan interface{}) error
+type serviceFn func(port string, ready chan interface{}, quit <-chan interface{}) error
 
 func main() {
 
@@ -122,7 +122,7 @@ mainloop:
 	os.Exit(rc)
 }
 
-func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) (<-chan interface{}, <-chan error) {
+func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) (chan interface{}, <-chan error) {
 	err := make(chan error)
 	ready := make(chan interface{})
 	Debug.Printf("Starting %s watcher", name)
@@ -174,18 +174,18 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 
 			if end.Sub(start) < time.Duration(10*time.Second) {
 				n++
-				Debug.Printf("%s failed to start, increasing number of restarts: %d.", name, n)
+				Debug.Printf("%s failed to start, restart #%d.", name, n)
 			} else {
 				n = 0
-				Debug.Printf("%s failed, but not immediately, considering as first restart.", name)
+				Debug.Printf("%s failed, but not immediately, reset as first restart.", name)
 			}
 		}
 	}()
 	return ready, err
 }
 
-func func1(port string, ready chan<- interface{}, quit <-chan interface{}) error {
-	cmd := exec.Command("sleep", "30")
+func func1(port string, ready chan interface{}, quit <-chan interface{}) error {
+	cmd := exec.Command("sleep", "3")
 	// prevent Ctrl + C and other signals to get sent
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,

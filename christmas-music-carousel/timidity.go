@@ -8,7 +8,7 @@ import (
 )
 
 // start and connect timidity daemon to port
-func startTimidity(port string, ready chan<- interface{}, quit <-chan interface{}) error {
+func startTimidity(port string, ready chan interface{}, quit <-chan interface{}) error {
 	cmd := exec.Command("timidity", "-Os", "-iA")
 	e := cmd.Start()
 	if e != nil {
@@ -67,7 +67,8 @@ func startTimidity(port string, ready chan<- interface{}, quit <-chan interface{
 }
 
 // connect timidity to port, send a ready signal once connected
-func connectTimitidy(port string, ready chan<- interface{}, done <-chan interface{}, err chan<- error) {
+func connectTimitidy(port string, ready chan interface{}, done <-chan interface{}, err chan<- error) {
+
 	n := 0
 	for {
 		_, e := exec.Command("aconnect", "-l").Output()
@@ -77,11 +78,47 @@ func connectTimitidy(port string, ready chan<- interface{}, done <-chan interfac
 				return
 			}
 			n++
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(time.Second)
 			continue
 		}
-		Debug.Printf("Signaling timidity is ready")
-		close(ready)
+
+		// get timidity port
+		i := bytes.Index(out, []byte("TiMidity"))
+		if i < 0 {
+			if n > 4 {
+				err <- errors.New("No TiMitidy alsa port found")
+				return
+			}
+			n++
+			time.Sleep(time.Second)
+			continue
+		}
+		end := bytes.LastIndexByte(out[:i], ':')
+		start := bytes.LastIndexByte(out[:end], ' ')
+		tport := string(out[start+1 : end])
+
+		// connect timitity to main port
+		out, e = exec.Command("aconnect", port, tport).CombinedOutput()
+		if e != nil {
+			if n > 4 {
+				err <- errors.New(string(out))
+				return
+			}
+			n++
+			time.Sleep(time.Second)
+			continue
+		}
+
+		Debug.Printf("Signaling timidity is connected")
+		// we only signal it once, if timidity fails and restarts, aplaymidi is already reading music
+		select {
+		case _, opened := <-ready:
+			if opened {
+				close(ready)
+			}
+		default:
+			close(ready)
+		}
 		return
 	}
 
