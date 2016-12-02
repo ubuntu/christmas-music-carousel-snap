@@ -81,8 +81,12 @@ mainloop:
 			Error.Printf("Fatal error in midi timidity backend player: %v\n", err)
 			rc = 1
 			// TODO: handle quit better (racy)
-			if _, opened := <-quit; opened {
-				close(quit)
+			select {
+			case _, opened := <-quit:
+				if opened {
+					close(quit)
+				}
+			default:
 			}
 			break mainloop
 		case err := <-eplayer:
@@ -91,8 +95,12 @@ mainloop:
 				rc = 1
 			}
 			// TODO: handle quit better (racy)
-			if _, opened := <-quit; opened {
-				close(quit)
+			select {
+			case _, opened := <-quit:
+				if opened {
+					close(quit)
+				}
+			default:
 			}
 			break mainloop
 		case <-quit:
@@ -130,8 +138,12 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 					Debug.Printf("We did fail starting %s many times, returning an error", name)
 					// send a ready signal in case we never sent it on startup. We are the only goroutine accessing it
 					// so it's safe to check if closed
-					if _, active := <-ready; active {
-						close(ready)
+					select {
+					case _, opened := <-ready:
+						if opened {
+							close(ready)
+						}
+					default:
 					}
 					err <- e
 					return
