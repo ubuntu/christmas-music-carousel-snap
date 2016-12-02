@@ -11,6 +11,7 @@ func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-cha
 
 	wg.Add(1)
 	go func() {
+		defer Debug.Println("Player watcher stopped")
 		defer wg.Done()
 		defer close(err)
 		// play indefinitly the list of songs

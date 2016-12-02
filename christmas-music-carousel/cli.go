@@ -107,9 +107,11 @@ mainloop:
 			}
 			eplayer = nil
 			break mainloop
+		// FIXME: there is a race if 2 errors happens in the same time. Indeed, only one is read and the other
+		// goroutine is blocked, not releasing the wait group lock then.
 		case <-epg:
 			// TODO: separate no PiGlow detected from detected, but an error happened
-			User.Println("No user PiGlow detected, continuing led synchronization support")
+			User.Println("No user PiGlow detected, continuing without led synchronization support")
 			epg = nil
 		case <-quit:
 			break mainloop
@@ -123,11 +125,11 @@ mainloop:
 func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) (<-chan interface{}, <-chan error) {
 	err := make(chan error)
 	ready := make(chan interface{})
-	Debug.Printf("Starting %s", name)
+	Debug.Printf("Starting %s watcher", name)
 
 	wg.Add(1)
 	go func() {
-		defer Debug.Printf("%s stopped", name)
+		defer Debug.Printf("%s watcher stopped", name)
 		defer wg.Done()
 		defer close(err)
 
