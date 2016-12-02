@@ -105,6 +105,10 @@ mainloop:
 			}
 			eplayer = nil
 			break mainloop
+		case <-epg:
+			// TODO: separate no PiGlow detected from detected, but an error happened
+			User.Println("No user PiGlow detected, continuing led synchronization support")
+			epg = nil
 		case <-quit:
 			break mainloop
 		}
