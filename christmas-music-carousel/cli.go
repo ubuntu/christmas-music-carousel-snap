@@ -61,6 +61,13 @@ func main() {
 
 	// connect timitidy to main input
 
+	// give 2s for the piglow connection to be setup
+	select {
+	case <-pgready:
+	case <-time.After(2 * time.Second):
+		User.Printf("Couldn't connect quickly to piglow on the network, ignoring this feature, but still trying to reconnect")
+	}
+
 	// grab musics to play and shuffle them
 
 	// run aplaymidi forever in a loop
