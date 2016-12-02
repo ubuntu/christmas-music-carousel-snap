@@ -85,7 +85,7 @@ func connectTimitidy(port string, ready chan interface{}, done <-chan interface{
 				return
 			}
 			n++
-			time.Sleep(time.Second)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 
@@ -112,7 +112,7 @@ func connectTimitidy(port string, ready chan interface{}, done <-chan interface{
 				return
 			}
 			n++
-			time.Sleep(time.Second)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 

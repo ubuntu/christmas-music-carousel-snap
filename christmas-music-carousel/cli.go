@@ -63,11 +63,11 @@ func main() {
 	timitidyready, etimidity := keepservicealive(startTimidity, "Timidity", mainPort, wg, quit)
 	<-timitidyready
 
-	// give 2s for the piglow connection to be setup
+	// give an additional second for the piglow connection to be setup
 	select {
 	case <-pgready:
-	case <-time.After(2 * time.Second):
-		User.Printf("Couldn't connect quickly to piglow on the network, ignoring this feature, but still trying to reconnect")
+	case <-time.After(time.Second):
+		User.Printf("Couldn't quickly find a PiGlow on the network, ignoring this feature, but still trying to reconnect")
 	}
 
 	// grab musics to play and shuffle them
@@ -158,7 +158,7 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 				return
 			default:
 				if n > maxRestart-1 {
-					Debug.Printf("We did fail starting %s many times, returning an error", name)
+					Debug.Printf("%s did fail starting many times, returning an error", name)
 					// send a ready signal in case we never sent it on startup. We are the only goroutine accessing it
 					// so it's safe to check if closed
 					select {
