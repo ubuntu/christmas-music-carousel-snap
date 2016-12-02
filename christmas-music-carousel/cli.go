@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/exec"
+	"os/signal"
 	"sync"
 	"syscall"
 	"time"
@@ -13,7 +14,7 @@ const (
 	maxRestart = 5
 )
 
-type serviceFn func(quit <-chan interface{}) error
+type serviceFn func(port string, ready chan<- interface{}, quit <-chan interface{}) error
 
 func main() {
 
@@ -43,7 +44,7 @@ func main() {
 	quit := make(chan interface{})
 
 	// run listen to music event client
-	etimidity := keepservicealive(func1, "Timidity", mainPort, wg, quit)
+	pgready, epg := keepservicealive(func1, "Piglow Connector", mainPort, wg, quit)
 
 	// run timidity
 
@@ -77,8 +78,10 @@ mainloop:
 	os.Exit(rc)
 }
 
-func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) <-chan error {
+func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) (<-chan interface{}, <-chan error) {
 	err := make(chan error)
+	ready := make(chan interface{})
+	Debug.Printf("Starting %s", name)
 
 	wg.Add(1)
 	go func() {
@@ -88,7 +91,7 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 		n := 0
 		for {
 			start := time.Now()
-			e := f(quit)
+			e := f(port, ready, quit)
 			end := time.Now()
 
 			// check for quitting request
@@ -99,6 +102,11 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 			default:
 				if n > maxRestart-1 {
 					Debug.Printf("We did fail starting %s many times, returning an error", name)
+					// send a ready signal in case we never sent it on startup. We are the only goroutine accessing it
+					// so it's safe to check if closed
+					if _, active := <-ready; active {
+						close(ready)
+					}
 					err <- e
 					return
 				}
@@ -108,16 +116,20 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 				n++
 				Debug.Printf("%s failed to start, increasing number of restarts: %d.", name, n)
 			} else {
-				n = 1
+				n = 0
 				Debug.Printf("%s failed, but not immediately, considering as first restart.", name)
 			}
 		}
 	}()
-	return err
+	return ready, err
 }
 
-func func1(quit <-chan interface{}) error {
-	cmd := exec.Command("sleep", "3")
+func func1(port string, ready chan<- interface{}, quit <-chan interface{}) error {
+	cmd := exec.Command("sleep", "30")
+	// prevent Ctrl + C and other signals to get sent
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
 	err := cmd.Start()
 	if err != nil {
 		return err
