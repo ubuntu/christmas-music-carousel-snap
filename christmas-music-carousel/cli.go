@@ -87,6 +87,7 @@ mainloop:
 					close(quit)
 				}
 			default:
+				close(quit)
 			}
 			etimidity = nil
 			break mainloop
@@ -102,6 +103,7 @@ mainloop:
 					close(quit)
 				}
 			default:
+				close(quit)
 			}
 			eplayer = nil
 			break mainloop
@@ -151,6 +153,7 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 							close(ready)
 						}
 					default:
+						close(ready)
 					}
 					err <- e
 					return
