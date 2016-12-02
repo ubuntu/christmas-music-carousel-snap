@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-func play(midiport string, files []string, wg *sync.WaitGroup, quit <-chan interface{}) <-chan error {
+func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-chan interface{}) <-chan error {
 	err := make(chan error)
 
 	wg.Add(1)

@@ -8,7 +8,10 @@ import (
 	"time"
 )
 
-const mainport = "14:0"
+const (
+	mainPort   = "14:0"
+	maxRestart = 5
+)
 
 type serviceFn func(quit <-chan interface{}) error
 
@@ -40,7 +43,7 @@ func main() {
 	quit := make(chan interface{})
 
 	// run listen to music event client
-	etimidity := keepservicealive(func1, wg, quit)
+	etimidity := keepservicealive(func1, "Timidity", mainPort, wg, quit)
 
 	// run timidity
 
@@ -48,8 +51,8 @@ func main() {
 
 	// grab musics to play and shuffle them
 
-	// run aplay with one music at a time
-	eplayer := play(mainport, musics, wg, quit)
+	// run aplaymidi forever in a loop
+	eplayer := playforever(mainPort, musics, wg, quit)
 
 	Debug.Println("All services started")
 mainloop:
@@ -57,13 +60,15 @@ mainloop:
 		select {
 		case err := <-etimidity:
 			Error.Printf("Fatal error in midi timidity backend player: %v\n", err)
-			close(quit)
 			rc = 1
+			close(quit)
 			break mainloop
 		case err := <-eplayer:
-			Error.Printf("Fatal error in midi player: %v\n", err)
+			if err != nil {
+				Error.Printf("Fatal error in midi player: %v\n", err)
+				rc = 1
+			}
 			close(quit)
-			rc = 1
 			break mainloop
 		}
 	}
@@ -72,7 +77,7 @@ mainloop:
 	os.Exit(rc)
 }
 
-func keepservicealive(f serviceFn, wg *sync.WaitGroup, quit <-chan interface{}) <-chan error {
+func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) <-chan error {
 	err := make(chan error)
 
 	wg.Add(1)
@@ -80,7 +85,7 @@ func keepservicealive(f serviceFn, wg *sync.WaitGroup, quit <-chan interface{}) 
 		defer wg.Done()
 		defer close(err)
 
-		nrestarts := 0
+		n := 0
 		for {
 			start := time.Now()
 			e := f(quit)
@@ -89,22 +94,22 @@ func keepservicealive(f serviceFn, wg *sync.WaitGroup, quit <-chan interface{}) 
 			// check for quitting request
 			select {
 			case <-quit:
-				Debug.Printf("Quit watch for service as submitted")
+				Debug.Printf("Quit %s watcher as requested", name)
 				return
 			default:
-				if nrestarts > 5 {
-					Debug.Printf("We did fail a service many times, returning an error")
+				if n > maxRestart-1 {
+					Debug.Printf("We did fail starting %s many times, returning an error", name)
 					err <- e
 					return
 				}
 			}
 
 			if end.Sub(start) < time.Duration(10*time.Second) {
-				nrestarts++
-				Debug.Printf("Failed a service quickly, increasing number of quick restarts: %d.", nrestarts)
+				n++
+				Debug.Printf("%s failed to start, increasing number of restarts: %d.", name, n)
 			} else {
-				nrestarts = 1
-				Debug.Printf("Failed a service but after a long time, considering as first restart.")
+				n = 1
+				Debug.Printf("%s failed, but not immediately, considering as first restart.", name)
 			}
 		}
 	}()
