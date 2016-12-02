@@ -141,6 +141,16 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 			select {
 			case <-quit:
 				Debug.Printf("Quit %s watcher as requested", name)
+				// send a ready signal in case we never sent it on startup. We are the only goroutine accessing it
+				// so it's safe to check if closed
+				select {
+				case _, opened := <-ready:
+					if opened {
+						close(ready)
+					}
+				default:
+					close(ready)
+				}
 				return
 			default:
 				if n > maxRestart-1 {
