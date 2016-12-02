@@ -88,6 +88,7 @@ mainloop:
 				}
 			default:
 			}
+			etimidity = nil
 			break mainloop
 		case err := <-eplayer:
 			if err != nil {
@@ -102,6 +103,7 @@ mainloop:
 				}
 			default:
 			}
+			eplayer = nil
 			break mainloop
 		case <-quit:
 			break mainloop
@@ -119,6 +121,7 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 
 	wg.Add(1)
 	go func() {
+		defer Debug.Printf("%s stopped", name)
 		defer wg.Done()
 		defer close(err)
 
