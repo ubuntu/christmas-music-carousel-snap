@@ -43,6 +43,17 @@ func main() {
 	rc := 0
 	quit := make(chan interface{})
 
+	// handle Ctrl + Ctrl properly
+	userstop := make(chan os.Signal)
+	signal.Notify(userstop, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		select {
+		case <-userstop:
+			Debug.Printf("Exit requested")
+			close(quit)
+		}
+	}()
+
 	// run listen to music event client
 	pgready, epg := keepservicealive(func1, "Piglow Connector", mainPort, wg, quit)
 
@@ -70,6 +81,8 @@ mainloop:
 				rc = 1
 			}
 			close(quit)
+			break mainloop
+		case <-quit:
 			break mainloop
 		}
 	}
