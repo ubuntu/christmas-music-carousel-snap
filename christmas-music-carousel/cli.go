@@ -64,7 +64,6 @@ func main() {
 
 	// run timidity and connect to main input
 	timitidyready, etimidity := keepservicealive(startTimidity, "Timidity", mainPort, wg, quit)
-	<-timitidyready
 
 	// grab musics to play and shuffle them
 	flag.Parse()
@@ -81,9 +80,8 @@ func main() {
 		User.Printf("Couldn't quickly find a PiGlow on the network, ignoring this feature, but still trying to reconnect")
 	}
 
-	// grab musics to play and shuffle them
-
-	// run aplaymidi forever in a loop
+	// run aplaymidi forever in a loop once timidity is ready
+	<-timitidyready
 	eplayer := playforever(mainPort, musics, wg, quit)
 
 	Debug.Println("All services started")
