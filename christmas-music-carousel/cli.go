@@ -2,10 +2,15 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"os/signal"
+	"path"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -39,8 +44,6 @@ func main() {
 		// TODO: Drop priviledges?
 	}
 
-	musics := []string{"Foo", "Bar", "Baz", "Tralala"}
-
 	wg := &sync.WaitGroup{}
 	rc := 0
 	quit := make(chan interface{})
@@ -62,6 +65,14 @@ func main() {
 	// run timidity and connect to main input
 	timitidyready, etimidity := keepservicealive(startTimidity, "Timidity", mainPort, wg, quit)
 	<-timitidyready
+
+	// grab musics to play and shuffle them
+	flag.Parse()
+	musics, err := musicToPlay()
+	if err != nil {
+		Error.Println(err)
+		close(quit)
+	}
 
 	// give an additional second for the piglow connection to be setup
 	select {
@@ -184,6 +195,38 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 		}
 	}()
 	return ready, err
+}
+
+func musicToPlay() ([]string, error) {
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+
+	// load musics from args
+	musics := flag.Args()
+
+	// load from directory then
+	if len(musics) == 0 {
+		musicdir := os.Getenv("SNAP")
+		if musicdir == "" {
+			var err error
+			if musicdir, err = filepath.Abs(path.Join(filepath.Dir(os.Args[0]), "..")); err != nil {
+				return nil, err
+			}
+		}
+		musicdir = path.Join(musicdir, "musics")
+		files, _ := ioutil.ReadDir(musicdir)
+		for _, f := range files {
+			musics = append(musics, path.Join(musicdir, f.Name()))
+		}
+	}
+
+	// shuffling
+	for i := range musics {
+		j := r.Intn(i + 1)
+		musics[i], musics[j] = musics[j], musics[i]
+	}
+	Debug.Printf("List of musics to play: %v", musics)
+	return musics, nil
 }
 
 func func1(port string, ready chan interface{}, quit <-chan interface{}) error {
