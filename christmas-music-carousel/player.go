@@ -57,11 +57,12 @@ func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-cha
 }
 
 func aplaymidi(midiport string, filename string, quit <-chan interface{}) error {
-	cmd := exec.Command("sleep", "10")
+	Debug.Printf("Playing %s", filename)
+	cmd := exec.Command("aplaymidi", "-p", midiport, filename)
+	var errbuf bytes.Buffer
+	cmd.Stderr = &errbuf
 	// prevent Ctrl + C and other signals to get sent
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	err := cmd.Start()
 	if err != nil {
 		return err
@@ -79,5 +80,6 @@ func aplaymidi(midiport string, filename string, quit <-chan interface{}) error 
 		}
 	}()
 
-	return cmd.Wait()
+	e := cmd.Wait()
+	return fmt.Errorf("%s: %v", errbuf.String(), e)
 }
