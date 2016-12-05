@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// start and connect timidity daemon to port
+// start and connect timidity daemon to port.
 func startTimidity(port string, ready chan interface{}, quit <-chan interface{}) error {
 	cmd := exec.Command("timidity", "-Os", "-iA")
 	var errbuf bytes.Buffer
@@ -70,7 +70,7 @@ func startTimidity(port string, ready chan interface{}, quit <-chan interface{})
 	return e
 }
 
-// connect timidity to port, send a ready signal once connected
+// connect timidity to port, send a ready signal once connected.
 func connectTimitidy(port string, ready chan interface{}, done <-chan interface{}, err chan<- error) {
 
 	n := 0

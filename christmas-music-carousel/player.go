@@ -56,6 +56,7 @@ func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-cha
 	return err
 }
 
+// run aplaymidi on listed file path.
 func aplaymidi(midiport string, filename string, quit <-chan interface{}) error {
 	Debug.Printf("Playing %s", filename)
 	cmd := exec.Command("aplaymidi", "-p", midiport, filename)
@@ -81,5 +82,8 @@ func aplaymidi(midiport string, filename string, quit <-chan interface{}) error 
 	}()
 
 	e := cmd.Wait()
-	return fmt.Errorf("%s: %v", errbuf.String(), e)
+	if e != nil {
+		e = fmt.Errorf("%s: %v", errbuf.String(), e)
+	}
+	return e
 }

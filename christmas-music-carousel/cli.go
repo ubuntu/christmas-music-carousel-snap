@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"os/exec"
 	"os/signal"
 	"path"
 	"path/filepath"
@@ -144,6 +141,8 @@ mainloop:
 	os.Exit(rc)
 }
 
+// keep a service alive and restart it if needed.
+// stop restarting the service if it's failing too quickly many times in a row.
 func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) (chan interface{}, <-chan error) {
 	err := make(chan error)
 	ready := make(chan interface{})
@@ -206,6 +205,7 @@ func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup,
 	return ready, err
 }
 
+// grab a list of musics to play. Can be local list of musics if no argument is provided.
 func musicToPlay() ([]string, error) {
 	s := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(s)
@@ -236,36 +236,4 @@ func musicToPlay() ([]string, error) {
 	}
 	Debug.Printf("List of musics to play: %v", musics)
 	return musics, nil
-}
-
-func func1(port string, ready chan interface{}, quit <-chan interface{}) error {
-	cmd := exec.Command("sleep", "3")
-	var errbuf bytes.Buffer
-	cmd.Stderr = &errbuf
-	// prevent Ctrl + C and other signals to get sent
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
-	err := cmd.Start()
-	if err != nil {
-		return err
-	}
-
-	// killer goroutine
-	done := make(chan interface{})
-	defer close(done)
-	go func() {
-		select {
-		case <-quit:
-			Debug.Println("Forcing func1 to stop")
-			cmd.Process.Kill()
-		case <-done:
-		}
-	}()
-
-	e := cmd.Wait()
-	if e != nil {
-		return fmt.Errorf("%s: %v", errbuf.String(), e)
-	}
-	return nil
 }
