@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"os/exec"
 	"sync"
 	"syscall"
+	"time"
 )
 
 func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-chan interface{}) <-chan error {
@@ -14,10 +18,15 @@ func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-cha
 		defer Debug.Println("Player watcher stopped")
 		defer wg.Done()
 		defer close(err)
+
 		// play indefinitly the list of songs
 		for {
+			var lasterror error
+			readOneMusic := false
 			for _, f := range files {
-				e := aplaymidi(midiport, f, quit)
+				start := time.Now()
+				lasterror = aplaymidi(midiport, f, quit)
+				end := time.Now()
 
 				// check for quitting request
 				select {
@@ -27,10 +36,19 @@ func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-cha
 				default:
 				}
 
-				if e != nil {
-					err <- e
+				if end.Sub(start) > time.Duration(time.Second) {
+					readOneMusic = true
+				}
+			}
+
+			// exit loop if we couldn't play any music
+			if !readOneMusic {
+				if lasterror != nil {
+					err <- lasterror
 					return
 				}
+				err <- errors.New("aplaymidi fails playing any files")
+				return
 			}
 		}
 	}()
