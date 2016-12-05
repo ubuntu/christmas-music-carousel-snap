@@ -133,7 +133,7 @@ mainloop:
 		// goroutine is blocked, not releasing the wait group lock then.
 		case <-epg:
 			// TODO: separate no PiGlow detected from detected, but an error happened
-			User.Println("No user PiGlow detected, continuing without led synchronization support")
+			User.Println("No working PiGlow detected, continuing without led synchronization support")
 			epg = nil
 		case <-quit:
 			break mainloop

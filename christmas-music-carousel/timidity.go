@@ -15,13 +15,11 @@ func startTimidity(port string, ready chan interface{}, quit <-chan interface{})
 	cmd := exec.Command("timidity", "-Os", "-iA")
 	var errbuf bytes.Buffer
 	cmd.Stderr = &errbuf
+	// prevent Ctrl + C and other signals to get sent
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	e := cmd.Start()
 	if e != nil {
 		return e
-	}
-	// prevent Ctrl + C and other signals to get sent
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
 	}
 
 	wg := sync.WaitGroup{}
