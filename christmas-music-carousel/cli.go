@@ -106,6 +106,17 @@ mainloop:
 			if err != nil {
 				Error.Printf("Fatal error in midi player: %v\n", err)
 				rc = 1
+				// TODO: handle quit better (racy)
+				select {
+				case _, opened := <-quit:
+					if opened {
+						close(quit)
+					}
+				default:
+					close(quit)
+				}
+				eplayer = nil
+				break mainloop
 			}
 			// TODO: handle quit better (racy)
 			select {
