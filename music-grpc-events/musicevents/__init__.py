@@ -5,8 +5,10 @@ import logging
 import sys
 
 import argparse
-import grpc
-import piglow_pb2 as pb
+
+import grpc_piglow
+import midi_listener
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -29,11 +31,21 @@ def main():
 
     # test connexion by zeroIng the leds
     try:
-        piglow.SetAll(pb.BrightnessRequest(brightness=0))
-    except:
+        piglow = grpc_piglow.RemotePiGlow(args.address)
+    except Exception as e:
         LOGGER.error("Couldn't connect to the PiGlow at " + args.address)
+        print(e)
         sys.exit(1)
 
-    #piglow.SetLED(pb.LedRequest(num=3, brightness=0))
+    # try to connect to midi sequencer
+    try:
+        seq = midi_listener.MidiSequencer(args.MidiPort, piglow)
+    except ValueError:
+        LOGGER.error("Invalid midi port parameter (should be client:port): " + args.MidiPort)
+        sys.exit(1)
+    except Exception as e:
+        LOGGER.error("Couldn't connect midi sequencer:")
+        print(e)
+        sys.exit(1)
 
-    print(args)
+    seq.listen()
