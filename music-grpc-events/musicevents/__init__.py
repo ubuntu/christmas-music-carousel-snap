@@ -12,9 +12,12 @@ import midi_listener
 
 LOGGER = logging.getLogger(__name__)
 
+_piglow = None
 
 def signal_handler(signal, frame):
     LOGGER.debug("Exit requested")
+    if _piglow:
+        _piglow.reset_leds()
     sys.exit(0)
 
 
@@ -48,6 +51,8 @@ def main():
     # test connexion by zeroIng the leds
     try:
         piglow = grpc_piglow.RemotePiGlow(args.address)
+        global _piglow
+        _piglow = piglow
     except Exception as e:
         LOGGER.error("Couldn't connect to the PiGlow at " + args.address)
         print(e)
