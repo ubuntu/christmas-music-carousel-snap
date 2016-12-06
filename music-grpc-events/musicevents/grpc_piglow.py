@@ -8,7 +8,8 @@ LOGGER = logging.getLogger(__name__)
 class RemotePiGlow(object):
     '''Remote piGlow representation'''
 
-    MAX_BRIGHTNESS = 255
+    NUM_LEDS = 18
+    MAX_BRIGHTNESS = 20
 
     def __init__(self, address):
         '''connect to PiGlow'''
