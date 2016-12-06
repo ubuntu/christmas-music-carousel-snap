@@ -21,14 +21,11 @@ def main():
 
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
     if args.debug:
         logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
-        LOGGER.debug("Debug mode enabled")
-
-    # Connect to grpc client
-    channel = grpc.insecure_channel(args.address)
-    piglow = pb.PiGlowStub(channel)
+        logging.debug("Debug mode enabled")
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     # test connexion by zeroIng the leds
     try:
