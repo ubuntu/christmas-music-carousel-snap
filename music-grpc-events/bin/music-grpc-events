@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+# Run local version for development
+root_dir = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, root_dir)
+from musicevents import main
+
+if __name__ == '__main__':
+    main()
