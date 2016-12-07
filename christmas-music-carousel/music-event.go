@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 	"time"
 
-	"strconv"
+	"os"
 
 	"github.com/oleksandr/bonjour"
 )
@@ -37,8 +38,14 @@ func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan i
 		return fmt.Errorf("no PiGlow service found on the network")
 	}
 
-	//cmd := exec.Command("/tmp/fooo", m.AddrIPv4.String(), io.(m.Port), midiPort)
-	cmd := exec.Command("sleep", strconv.Itoa(m.Port))
+	// grab which binary to run (the one in path or from master)
+	cmdName := "music-grpc-events"
+	masterCmd := filepath.Join(filepath.Dir(os.Args[0]), "..", "music-grpc-events", "bin", "music-grpc-events-master")
+	if _, err := os.Stat(masterCmd); err == nil {
+		cmdName = masterCmd
+	}
+
+	cmd := exec.Command(cmdName, midiPort, fmt.Sprintf("%s:%d", m.AddrIPv4.String(), m.Port))
 	var errbuf bytes.Buffer
 	cmd.Stderr = &errbuf
 	// prevent Ctrl + C and other signals to get sent
