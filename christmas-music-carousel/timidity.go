@@ -88,8 +88,8 @@ func connectTimitidy(port string, ready chan interface{}, done <-chan interface{
 		}
 
 		// get timidity port
-		i := bytes.LastIndex(out, []byte("TiMidity"))
-		if i < 0 {
+		end := bytes.LastIndex(out, []byte(": 'TiMidity'"))
+		if end < 0 {
 			if n > 4 {
 				err <- errors.New("No TiMitidy alsa port found")
 				return
@@ -98,7 +98,6 @@ func connectTimitidy(port string, ready chan interface{}, done <-chan interface{
 			time.Sleep(time.Second)
 			continue
 		}
-		end := bytes.LastIndexByte(out[:i], ':')
 		start := bytes.LastIndexByte(out[:end], ' ')
 		tport := string(out[start+1 : end])
 
