@@ -59,11 +59,11 @@ func main() {
 			Error.Println("This program needs to run as root, under sudo to get access to alsa from the snap")
 			os.Exit(1)
 		}
-		if err := syscall.Mount("/var/lib/snapd/hostfs/usr/lib", "/usr/lib", "", syscall.MS_BIND, ""); err == nil {
+		if err := syscall.Mount("/var/lib/snapd/hostfs/usr/lib", "/usr/lib", "", syscall.MS_BIND, ""); err != nil {
 			Error.Printf("Couldn't mount alsa directory: %v", err)
 			os.Exit(1)
 		}
-		if err := syscall.Mount("/var/lib/snapd/hostfs/usr/share", "/usr/share", "", syscall.MS_BIND, ""); err == nil {
+		if err := syscall.Mount("/var/lib/snapd/hostfs/usr/share", "/usr/share", "", syscall.MS_BIND, ""); err != nil {
 			Error.Printf("Couldn't mount alsa directory: %v", err)
 			os.Exit(1)
 		}
