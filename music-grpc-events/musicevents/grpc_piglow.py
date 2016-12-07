@@ -1,7 +1,7 @@
 import logging
 
 import grpc
-import piglow_pb2 as pb
+from musicevents import piglow_pb2 as pb
 
 LOGGER = logging.getLogger(__name__)
 

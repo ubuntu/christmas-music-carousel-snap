@@ -7,8 +7,8 @@ import sys
 
 import argparse
 
-import grpc_piglow
-import midi_listener
+from musicevents import grpc_piglow
+from musicevents import midi_listener
 
 LOGGER = logging.getLogger(__name__)
 
