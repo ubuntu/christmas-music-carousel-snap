@@ -2,8 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
+	"path"
 	"sync"
 	"syscall"
 	"time"
@@ -16,7 +18,26 @@ const (
 
 type serviceFn func(port string, ready chan interface{}, quit <-chan interface{}) error
 
+const usageText = `Usage: %s [-options] [LIST OF MIDI FILES]
+
+Play a music carousel and optionally sync up with lights on a Raspberry PiGlow
+connected on the network.
+
+A list of midi files can be provided, and in that case, the carousel will play
+over them in random orders. If none is provided, a default christmas selection
+is chosen.
+If you have a PiGlow on the same network, ensure you have the grpc-piglow snap
+installed on it.
+
+This programs need to be ran as root on your laptop to connect to alsa.
+`
+
 func main() {
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, usageText, path.Base(os.Args[0]))
+		flag.PrintDefaults()
+	}
 
 	d := flag.Bool("debug", false, "Enable debug (developer) messages")
 	b := flag.Int("brightness", 0, "Adjust brightness (from 1 to 255) for light up PiGlow. Warning: any value above default (30) is dazzling.")
