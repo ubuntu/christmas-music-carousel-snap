@@ -4,7 +4,7 @@ summary: Play midi christmas music and connect to your Pi to display leds!
 description: |
   This snap plays midi christmas music. You can select your own songs or play
   the default carousel selection via its embedded synthetizer.
-  It can as well forward events via the network to a raspberry pi with piglow
+  It can as well forward events via the network to a raspberry pi with PiGlow
   to light leds in sync with the music.
   /!\ This snap won't work on any board where alsa isn't installed by default
   for now.
@@ -12,13 +12,25 @@ grade: stable
 confinement: devmode
 
 apps:
-  timidity:
-    command: alsa-handler timidity -Os -iA
-    daemon: simple
-    restart-condition: always
+  christmas-music-carousel:
+    command: christmas-music-carousel
 
 parts:
-  timidity:
-    source: timidity-scripts
+  christmas-music-carousel:
+    source: christmas-music-carousel/
+    plugin: go
+    go-importpath: github.com/ubuntu/christmas-music-carousel
+  music-grpc-events:
+    source: music-grpc-events/
+    plugin: python
+    python-version: python2
+    requirements: requirements.txt
+    build-packages: [swig3.0]
+  midi-musics:
+    source: musics/
     plugin: dump
+    organize:
+      '*mid' : musics/
+  timidity-alsa:
+    plugin: nil
     stage-packages: [alsa-utils, timidity]
