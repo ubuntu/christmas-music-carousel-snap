@@ -10,8 +10,12 @@ import (
 
 	"os"
 
+	"strconv"
+
 	"github.com/oleksandr/bonjour"
 )
+
+var brightness int
 
 // look for PiGlow on the network and start the music event processor.
 func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan interface{}) error {
@@ -45,7 +49,11 @@ func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan i
 		cmdName = masterCmd
 	}
 
-	cmd := exec.Command(cmdName, midiPort, fmt.Sprintf("%s:%d", m.AddrIPv4.String(), m.Port))
+	address := fmt.Sprintf("%s:%d", m.AddrIPv4.String(), m.Port)
+	cmd := exec.Command(cmdName, midiPort, address)
+	if brightness > 0 {
+		cmd = exec.Command(cmdName, "-b", strconv.Itoa(brightness), midiPort, address)
+	}
 	var errbuf bytes.Buffer
 	cmd.Stderr = &errbuf
 	// prevent Ctrl + C and other signals to get sent
@@ -85,4 +93,12 @@ func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan i
 		return fmt.Errorf("%s: %v", errbuf.String(), e)
 	}
 	return nil
+}
+
+func setBrightness(b int) {
+	if b < 1 || b > 255 {
+		User.Printf("Keeping brightness to default: value should be between 1 and 255. Got %d", b)
+		return
+	}
+	brightness = b
 }

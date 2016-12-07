@@ -18,6 +18,18 @@ type serviceFn func(port string, ready chan interface{}, quit <-chan interface{}
 
 func main() {
 
+	d := flag.Bool("debug", false, "Enable debug (developer) messages")
+	b := flag.Int("brightness", 0, "Adjust brightness (from 1 to 255) for light up PiGlow. Warning: any value above default (30) is dazzling.")
+	flag.Parse()
+
+	if *d {
+		EnableDebug()
+		Debug.Println("Debug message level enabled")
+	}
+	if *b > 0 {
+		setBrightness(*b)
+	}
+
 	// alsa operations
 	// bindmount in current snap namespace /usr/share and /usr/lib directory for alsa conf and plugin not being relocatable
 	// TODO: extract in a function returning err

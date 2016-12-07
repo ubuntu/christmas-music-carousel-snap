@@ -3,7 +3,6 @@ package main
 // very simple logger library, mostly based on https://dave.cheney.net/2015/11/05/lets-talk-about-logging
 
 import (
-	"flag"
 	"io/ioutil"
 	"log"
 	"os"
@@ -27,16 +26,6 @@ func init() {
 	Debug = log.New(ioutil.Discard, "DEBUG: ", normalLogFlags)
 	User = log.New(os.Stdout, "", normalLogFlags)
 	Error = log.New(os.Stderr, "ERROR: ", normalLogFlags)
-
-	// Note: we need to do this here as some other packages depending on logger during their init() might
-	// logs content.
-	d := flag.Bool("debug", false, "Enable debug (developer) messages")
-	flag.Parse()
-
-	if *d {
-		EnableDebug()
-		Debug.Println("Debug message level enabled")
-	}
 }
 
 // EnableDebug prints debug messages with all details.
