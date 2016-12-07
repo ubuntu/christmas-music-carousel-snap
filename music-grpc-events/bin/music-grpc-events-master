@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+# bootstrap grpc events handler from master, in a virtualenv
+bindir=$(dirname $0)
+
+. $bindir/../venv/bin/activate
+exec $bindir/music-grpc-events "$@"
