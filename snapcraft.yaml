@@ -34,3 +34,10 @@ parts:
   timidity-alsa:
     plugin: nil
     stage-packages: [alsa-utils, timidity]
+  # workaround https://bugs.launchpad.net/snapcraft/+bug/1648039
+  workaround:
+    source: workaround/
+    plugin: dump
+    organize:
+      sequencer_alsa.py: lib/python2.7/site-packages/midi/sequencer/
+    after: [music-grpc-events]
