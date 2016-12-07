@@ -25,6 +25,7 @@ def main():
     """Main entry point of the program"""
 
     signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     parser = argparse.ArgumentParser(description="Receive some midi events and forward in grpc PiGlow light commands")
     parser.add_argument('MidiPort', help="midi port to connect from")

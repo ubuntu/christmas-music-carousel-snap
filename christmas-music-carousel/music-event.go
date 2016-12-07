@@ -72,7 +72,7 @@ func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan i
 		select {
 		case <-quit:
 			Debug.Println("Quit PiGlow connector watcher as requested")
-			cmd.Process.Kill()
+			cmd.Process.Signal(syscall.SIGTERM)
 		case <-done:
 		}
 	}()
