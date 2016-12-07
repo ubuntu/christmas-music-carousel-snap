@@ -51,6 +51,11 @@ class MidiSequencer(object):
 
             elif ev.type == S.SND_SEQ_EVENT_NOTEON and ev.data.note.velocity != 0:
                 LOGGER.debug("New light on")
+                channel = ev.data.note.channel
+                if ((channel >= 8 and channel <= 15) or # percussions
+                        (channel >= 32 and channel <= 39) or # base
+                        (channel >= 88 and channel <= 103)): # synth
+                    continue
 
                 # get the list of free leds
                 free_leds = []
@@ -68,7 +73,7 @@ class MidiSequencer(object):
                 self.piglow.set_led_on(new_led_int)
 
                 # store this info
-                self.leds[new_led_int] = LedTracker(ev.data.note.note, ev.data.note.channel)
+                self.leds[new_led_int] = LedTracker(ev.data.note.note, channel)
 
             elif (ev.type == S.SND_SEQ_EVENT_NOTEOFF or
                   (ev.type == S.SND_SEQ_EVENT_NOTEON and ev.data.note.velocity == 0)):
