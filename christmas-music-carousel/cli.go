@@ -117,43 +117,14 @@ mainloop:
 		case err := <-etimidity:
 			Error.Printf("Fatal error in midi timidity backend player: %v\n", err)
 			rc = 1
-			// TODO: handle quit better (racy)
-			select {
-			case _, opened := <-quit:
-				if opened {
-					close(quit)
-				}
-			default:
-				close(quit)
-			}
-			etimidity = nil
+			signalQuit(quit)
 			break mainloop
 		case err := <-eplayer:
 			if err != nil {
 				Error.Printf("Fatal error in midi player: %v\n", err)
 				rc = 1
-				// TODO: handle quit better (racy)
-				select {
-				case _, opened := <-quit:
-					if opened {
-						close(quit)
-					}
-				default:
-					close(quit)
-				}
-				eplayer = nil
-				break mainloop
 			}
-			// TODO: handle quit better (racy)
-			select {
-			case _, opened := <-quit:
-				if opened {
-					close(quit)
-				}
-			default:
-				close(quit)
-			}
-			eplayer = nil
+			signalQuit(quit)
 			break mainloop
 		// FIXME: there is a race if 2 errors happens in the same time. Indeed, only one is read and the other
 		// goroutine is blocked, not releasing the wait group lock then.

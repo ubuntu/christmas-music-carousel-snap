@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var quitSignalMutex = sync.Mutex{}
+
 // keep a service alive and restart it if needed.
 // stop restarting the service if it's failing too quickly many times in a row.
 func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) (chan interface{}, <-chan error) {
@@ -122,4 +124,19 @@ func musicToPlay() ([]string, error) {
 
 	Debug.Printf("List of musics to play: %v", musics)
 	return musics, nil
+}
+
+// signalQuit safely by closing quit channel. However, doing it only once and can be called
+// by multiple goroutines
+func signalQuit(quit chan interface{}) {
+	quitSignalMutex.Lock()
+	select {
+	case _, opened := <-quit:
+		if opened {
+			close(quit)
+		}
+	default:
+		close(quit)
+	}
+	quitSignalMutex.Unlock()
 }
