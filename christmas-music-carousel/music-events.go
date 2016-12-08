@@ -49,7 +49,15 @@ func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan i
 		cmdName = masterCmd
 	}
 
-	address := fmt.Sprintf("%s:%d", m.AddrIPv4.String(), m.Port)
+	ip := m.AddrIPv4
+	port := m.Port
+	if ip == nil || port == 0 {
+		// wait a second for ip to be published now that we have the port
+		time.Sleep(time.Second)
+		return fmt.Errorf("Couldn't get ip or port while detecting a service")
+	}
+
+	address := fmt.Sprintf("%s:%d", ip.String(), m.Port)
 	cmd := exec.Command(cmdName, midiPort, address)
 	if brightness > 0 {
 		cmd = exec.Command(cmdName, "-b", strconv.Itoa(brightness), midiPort, address)
