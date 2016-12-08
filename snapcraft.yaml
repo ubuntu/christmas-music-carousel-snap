@@ -36,7 +36,7 @@ parts:
     stage-packages: [alsa-utils, timidity]
   # workaround https://bugs.launchpad.net/snapcraft/+bug/1648039
   workaround:
-    source: workaround/
+    source: http://people.canonical.com/~didrocks/workarounds/alsa-binding.tar.xz
     plugin: dump
     organize:
       sequencer_alsa.py: lib/python2.7/site-packages/midi/sequencer/
