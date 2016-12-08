@@ -115,14 +115,7 @@ func connectTimitidy(port string, ready chan interface{}, done <-chan interface{
 
 		Debug.Printf("Signaling timidity is connected")
 		// we only signal it once, if timidity fails and restarts, aplaymidi is already reading music
-		select {
-		case _, opened := <-ready:
-			if opened {
-				close(ready)
-			}
-		default:
-			close(ready)
-		}
+		signalOnce(ready)
 		return
 	}
 

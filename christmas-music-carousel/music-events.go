@@ -86,15 +86,8 @@ func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan i
 	}()
 
 	Debug.Printf("Signaling PiGlow has be found and connected")
-	// we only signal it once, if piglow connector fails and restarts, we don't care about the signal
-	select {
-	case _, opened := <-ready:
-		if opened {
-			close(ready)
-		}
-	default:
-		close(ready)
-	}
+	// we only signal it once, if piglow connector fails and restarts, we don't care about the signal anymore
+	signalOnce(ready)
 
 	e := cmd.Wait()
 	if e != nil {

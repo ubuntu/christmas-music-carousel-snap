@@ -110,13 +110,22 @@ func musicToPlay() ([]string, error) {
 // by multiple goroutines
 func signalQuit(quit chan interface{}) {
 	quitSignalMutex.Lock()
-	select {
-	case _, opened := <-quit:
-		if opened {
-			close(quit)
-		}
-	default:
-		close(quit)
-	}
+	signalOnce(quit)
 	quitSignalMutex.Unlock()
+}
+
+// signalOnce once that a channel is closed. This isn't multiple goroutines safe as most of channels are only closed
+// by one goroutine (contrary to the quit one above)
+func signalOnce(c chan interface{}) {
+	select {
+	// non blocking: either closed or receiving data
+	case _, opened := <-c:
+		// close it if it was opened
+		if opened {
+			close(c)
+		}
+	// if c is opened a blocks (waiting for something)
+	default:
+		close(c)
+	}
 }
