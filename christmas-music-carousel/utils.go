@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -102,6 +103,20 @@ func musicToPlay() ([]string, error) {
 		for i := range musics {
 			j := r.Intn(i + 1)
 			musics[i], musics[j] = musics[j], musics[i]
+		}
+
+		// add a little bit of bias by swapping in a chosen list the first music to play
+		biasm := []string{"12_Days_Of_Christmas.mid", "Carol_Of_The_Bells.mid", "Jingle_Bells.mid", "Let_It_Snow.mid",
+			"O_Come_All_Ye_Faithful.mid", "Rudolph_The_Red_Nosed_Reindeer.mid", "Rockin_Around_The_Christmas_Tree.mid",
+			"Santa_Claus_Is_Coming_To_Town.mid", "Sleigh_Ride.mid", "What_Child_Is_This.mid"}
+	bias:
+		for i, title := range musics {
+			for _, tchosen := range biasm {
+				if strings.HasSuffix(title, tchosen) {
+					musics[0], musics[i] = musics[i], musics[0]
+					break bias
+				}
+			}
 		}
 	}
 
