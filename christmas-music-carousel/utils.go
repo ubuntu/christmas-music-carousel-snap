@@ -97,13 +97,14 @@ func musicToPlay() ([]string, error) {
 		for _, f := range files {
 			musics = append(musics, path.Join(musicdir, f.Name()))
 		}
+
+		// shuffling
+		for i := range musics {
+			j := r.Intn(i + 1)
+			musics[i], musics[j] = musics[j], musics[i]
+		}
 	}
 
-	// shuffling
-	for i := range musics {
-		j := r.Intn(i + 1)
-		musics[i], musics[j] = musics[j], musics[i]
-	}
 	Debug.Printf("List of musics to play: %v", musics)
 	return musics, nil
 }
