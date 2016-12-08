@@ -5,7 +5,7 @@ Play a christmas music carousel from a selection or pre-selected music. Can conn
 
 On a 16.04 Ubuntu desktop, you can install this as a snap:
 
-`snap install christmas-music-carousel-snap --beta --devmode`
+`snap install christmas-music-carousel --beta --devmode`
 
 Optionally, connect on your network a Raspberry PiGlow
 [with Ubuntu Core installed on it](https://developer.ubuntu.com/en/snappy/start/raspberry-pi-2/) with a PiGlow.
