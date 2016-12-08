@@ -39,8 +39,8 @@ func main() {
 		flag.PrintDefaults()
 	}
 
-	d := flag.Bool("debug", false, "Enable debug (developer) messages")
-	b := flag.Int("brightness", 0, "Adjust brightness (from 1 to 255) for light up PiGlow. Warning: any value above default (30) is dazzling.")
+	d := flag.Bool("debug", false, "Enable debug messages")
+	b := flag.Int("brightness", 0, "Adjust brightness (from 1 to 255) for light up PiGlow. Warning: any value above default (20) is dazzling")
 	flag.Parse()
 
 	if *d {

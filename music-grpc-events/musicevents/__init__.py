@@ -27,12 +27,12 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    parser = argparse.ArgumentParser(description="Receive some midi events and forward in grpc PiGlow light commands")
-    parser.add_argument('MidiPort', help="midi port to connect from")
-    parser.add_argument('address', metavar='IP:PORT', help="grpc PiGlow IP:port to forward to")
-    parser.add_argument('-b', '--brightness', type=int, help="adjust brightness (from 1 to 255) for light up PiGlow. Warning: any value above default (30) is dazzling.")
+    parser = argparse.ArgumentParser(description="Receive some midi events and forward light commands using gRPC to a PiGlow")
+    parser.add_argument('MidiPort', help="Midi port to connect from")
+    parser.add_argument('address', metavar='IP:PORT', help="gRPC PiGlow IP:port to forward to")
+    parser.add_argument('-b', '--brightness', type=int, help="Adjust brightness (from 1 to 255) for light up PiGlow. Warning: any value above default (20) is dazzling")
 
-    parser.add_argument("-d", "--debug", action="store_true", help="Debug mode")
+    parser.add_argument("-d", "--debug", action="store_true", help="Enable debug messages")
 
     args = parser.parse_args()
 
