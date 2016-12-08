@@ -107,16 +107,27 @@ func main() {
 	}
 
 	// run aplaymidi forever in a loop once timidity is ready
-	<-timitidyready
-	eplayer := playforever(mainPort, musics, wg, quit)
+	var eplayer <-chan error
+	select {
+	case <-timitidyready:
+		eplayer = playforever(mainPort, musics, wg, quit)
+		Debug.Println("All services started")
+	case err := <-etimidity:
+		Error.Printf("Fatal error in midi timidity backend player: %v\n", err)
+		rc = 1
+		signalQuit(quit)
+	}
 
-	Debug.Println("All services started")
 mainloop:
 	for {
 		select {
 		case err := <-etimidity:
-			Error.Printf("Fatal error in midi timidity backend player: %v\n", err)
-			rc = 1
+			// what can happen is that we got the error at startup in timidity above, error channel is getting closed
+			// and we can fallback here instead of the <-quit case to exit
+			if err != nil {
+				Error.Printf("Fatal error in midi timidity backend player: %v\n", err)
+				rc = 1
+			}
 			signalQuit(quit)
 			break mainloop
 		case err := <-eplayer:
