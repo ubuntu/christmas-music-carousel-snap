@@ -52,16 +52,29 @@ protocol to detect the RPI PiGlow on the network and foward those connexions inf
 
 More information on gRPC-PiGlow can be found on https://github.com/didrocks/grpc-piglow
 
-### Regenerating the gRPC protocol (python)
-Ensure you are in your python virtualenv in music-grpc-events:
+
+### Developing:
+
+You need a Golang compiler with correct GOPATH set, and a python2 vm.
+
+You also need timidity and freepats installed on your system. Ensure you don't have timidity running as a daemon.
+`timidity-daemon` package shouldn't be installed or it will start a blocking timidity daemon locking alsa if your
+hw doesn't handle multiple streams:
 ```
-cd music-grpc-events
+sudo apt install --no-install-recommends timidity freepats
+```
+
+Ensure you created a python virtualenv for music-grpc-events:
+```
+cd music-grpc-events/
 virtualenv venv
 . venv/bin/active
 pip install -r requirements.txt
 ```
 
-Then, regenerate *piglow_pb2.py* from our protobuf protocole (the proto file is
+#### Regenerating the gRPC protocol (python)
+
+In your virtualenv environment for music-grpc-events, regenerate *piglow_pb2.py* from our protobuf protocol (the proto file is
 in github.com/didrocks/grpc-piglow):
 
 ```
