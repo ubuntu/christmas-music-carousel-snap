@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path"
 	"sync"
 	"syscall"
 	"time"
@@ -12,7 +14,12 @@ import (
 
 // start and connect timidity daemon to port.
 func startTimidity(port string, ready chan interface{}, quit <-chan interface{}) error {
-	cmd := exec.Command("timidity", "-Os", "-iA")
+	freepatsPath := "/usr/share/midi/freepats"
+	if snapdir := os.Getenv("SNAP"); snapdir != "" {
+		freepatsPath = path.Join(snapdir, freepatsPath)
+	}
+	cmd := exec.Command("timidity", "-Os", "-iA", "-c", path.Join(rootdir, "timidity-snap.cfg"),
+		"-L", freepatsPath)
 	var errbuf bytes.Buffer
 	cmd.Stderr = &errbuf
 	// prevent Ctrl + C and other signals to get sent
