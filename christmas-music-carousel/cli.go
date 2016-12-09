@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -15,6 +16,8 @@ const (
 	mainPort   = "14:0"
 	maxRestart = 5
 )
+
+var rootdir string
 
 type serviceFn func(port string, ready chan interface{}, quit <-chan interface{}) error
 
@@ -54,7 +57,7 @@ func main() {
 	// alsa operations
 	// bindmount in current snap namespace /usr/share and /usr/lib directory for alsa conf and plugin not being relocatable
 	// TODO: extract in a function returning err
-	if os.Getenv("SNAP") != "" {
+	if rootdir = os.Getenv("SNAP"); rootdir != "" {
 		if os.Getenv("SUDO_UID") == "" {
 			Error.Println("This program needs to run as root, under sudo to get access to alsa from the snap")
 			os.Exit(1)
@@ -68,6 +71,11 @@ func main() {
 			os.Exit(1)
 		}
 		// TODO: Drop priviledges?
+	} else {
+		var err error
+		if rootdir, err = filepath.Abs(path.Join(filepath.Dir(os.Args[0]), "..")); err != nil {
+			Error.Printf("Can't determine root directory: %v", err)
+		}
 	}
 
 	wg := &sync.WaitGroup{}

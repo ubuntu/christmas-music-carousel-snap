@@ -4,9 +4,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"math/rand"
-	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -68,14 +66,7 @@ func musicToPlay() ([]string, error) {
 
 	// load from directory then
 	if len(musics) == 0 {
-		musicdir := os.Getenv("SNAP")
-		if musicdir == "" {
-			var err error
-			if musicdir, err = filepath.Abs(path.Join(filepath.Dir(os.Args[0]), "..")); err != nil {
-				return nil, err
-			}
-		}
-		musicdir = path.Join(musicdir, "musics")
+		musicdir := path.Join(rootdir, "musics")
 		files, _ := ioutil.ReadDir(musicdir)
 		for _, f := range files {
 			musics = append(musics, path.Join(musicdir, f.Name()))
