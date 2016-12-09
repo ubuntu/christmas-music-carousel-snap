@@ -25,7 +25,7 @@ parts:
     plugin: python
     python-version: python2
     requirements: requirements.txt
-    build-packages: [libasound2-dev, swig3.0]
+    build-packages: [libasound2-dev, swig, swig3.0]
   midi-musics:
     source: musics/
     plugin: dump
