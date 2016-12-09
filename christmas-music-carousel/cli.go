@@ -75,6 +75,7 @@ func main() {
 		var err error
 		if rootdir, err = filepath.Abs(path.Join(filepath.Dir(os.Args[0]), "..")); err != nil {
 			Error.Printf("Can't determine root directory: %v", err)
+			os.Exit(1)
 		}
 	}
 
