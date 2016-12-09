@@ -33,7 +33,12 @@ parts:
       '*mid' : musics/
   timidity-alsa:
     plugin: nil
-    stage-packages: [alsa-utils, timidity]
+    stage-packages: [alsa-utils, freepats, timidity]
+  timidity-config:
+    source: .
+    plugin: dump
+    stage: [timidity-snap.cfg]
+    snap: [timidity-snap.cfg]
   # workaround https://bugs.launchpad.net/snapcraft/+bug/1648039
   workaround:
     source: https://github.com/ubuntu/christmas-music-carousel-snap/releases/download/v1.0/alsa-binding.tar.xz
