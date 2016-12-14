@@ -18,7 +18,7 @@ import (
 var brightness int
 
 // look for PiGlow on the network and start the music event processor.
-func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan interface{}) error {
+func startPiGlowMusicSync(midiPort string, ready chan struct{}, quit <-chan struct{}) error {
 	// get the service ip and port
 	resolver, err := bonjour.NewResolver(nil)
 	if err != nil {
@@ -74,7 +74,7 @@ func startPiGlowMusicSync(midiPort string, ready chan interface{}, quit <-chan i
 	}
 
 	// killer goroutine
-	done := make(chan interface{})
+	done := make(chan struct{})
 	defer close(done)
 	go func() {
 		select {

@@ -14,9 +14,9 @@ var quitSignalMutex = sync.Mutex{}
 
 // keep a service alive and restart it if needed.
 // stop restarting the service if it's failing too quickly many times in a row.
-func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan interface{}) (chan interface{}, <-chan error) {
+func keepservicealive(f serviceFn, name string, port string, wg *sync.WaitGroup, quit <-chan struct{}) (chan struct{}, <-chan error) {
 	err := make(chan error)
-	ready := make(chan interface{})
+	ready := make(chan struct{})
 	Debug.Printf("Starting %s watcher", name)
 
 	wg.Add(1)
@@ -99,7 +99,7 @@ func musicToPlay() ([]string, error) {
 
 // signalQuit safely by closing quit channel. However, doing it only once and can be called
 // by multiple goroutines
-func signalQuit(quit chan interface{}) {
+func signalQuit(quit chan struct{}) {
 	quitSignalMutex.Lock()
 	signalOnce(quit)
 	quitSignalMutex.Unlock()
@@ -107,7 +107,7 @@ func signalQuit(quit chan interface{}) {
 
 // signalOnce once that a channel is closed. This isn't multiple goroutines safe as most of channels are only closed
 // by one goroutine (contrary to the quit one above)
-func signalOnce(c chan interface{}) {
+func signalOnce(c chan struct{}) {
 	select {
 	// non blocking: either closed or receiving data
 	case _, opened := <-c:

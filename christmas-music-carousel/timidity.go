@@ -13,7 +13,7 @@ import (
 )
 
 // start and connect timidity daemon to port.
-func startTimidity(port string, ready chan interface{}, quit <-chan interface{}) error {
+func startTimidity(port string, ready chan struct{}, quit <-chan struct{}) error {
 	freepatsPath := "/usr/share/midi/freepats"
 	if snapdir := os.Getenv("SNAP"); snapdir != "" {
 		freepatsPath = path.Join(snapdir, freepatsPath)
@@ -32,7 +32,7 @@ func startTimidity(port string, ready chan interface{}, quit <-chan interface{})
 	wg := sync.WaitGroup{}
 
 	// killer goroutine
-	done := make(chan interface{})
+	done := make(chan struct{})
 	defer close(done)
 	go func() {
 		select {
@@ -78,7 +78,7 @@ func startTimidity(port string, ready chan interface{}, quit <-chan interface{})
 }
 
 // connect timidity to port, send a ready signal once connected.
-func connectTimitidy(port string, ready chan interface{}, done <-chan interface{}, err chan<- error) {
+func connectTimitidy(port string, ready chan struct{}, done <-chan struct{}, err chan<- error) {
 
 	n := 0
 	for {

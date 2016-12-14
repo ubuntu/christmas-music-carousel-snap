@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-chan interface{}) <-chan error {
+func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-chan struct{}) <-chan error {
 	err := make(chan error)
 
 	wg.Add(1)
@@ -57,7 +57,7 @@ func playforever(midiport string, files []string, wg *sync.WaitGroup, quit <-cha
 }
 
 // run aplaymidi on listed file path.
-func aplaymidi(midiport string, filename string, quit <-chan interface{}) error {
+func aplaymidi(midiport string, filename string, quit <-chan struct{}) error {
 	Debug.Printf("Playing %s", filename)
 	cmd := exec.Command("aplaymidi", "-p", midiport, filename)
 	var errbuf bytes.Buffer
@@ -70,7 +70,7 @@ func aplaymidi(midiport string, filename string, quit <-chan interface{}) error 
 	}
 
 	// killer goroutine
-	done := make(chan interface{})
+	done := make(chan struct{})
 	defer close(done)
 	go func() {
 		select {

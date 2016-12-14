@@ -19,7 +19,7 @@ const (
 
 var rootdir string
 
-type serviceFn func(port string, ready chan interface{}, quit <-chan interface{}) error
+type serviceFn func(port string, ready chan struct{}, quit <-chan struct{}) error
 
 const usageText = `Usage: %s [-options] [LIST OF MIDI FILES]
 
@@ -81,7 +81,7 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	rc := 0
-	quit := make(chan interface{})
+	quit := make(chan struct{})
 
 	// handle Ctrl + Ctrl properly
 	userstop := make(chan os.Signal)
