@@ -32,7 +32,7 @@ func startTimidity(port string, ready chan struct{}, quit <-chan struct{}) error
 	wg := sync.WaitGroup{}
 
 	// killer goroutine
-	done := make(chan struct{})
+	done := make(chan bool)
 	defer close(done)
 	go func() {
 		select {
@@ -78,7 +78,7 @@ func startTimidity(port string, ready chan struct{}, quit <-chan struct{}) error
 }
 
 // connect timidity to port, send a ready signal once connected.
-func connectTimitidy(port string, ready chan struct{}, done <-chan struct{}, err chan<- error) {
+func connectTimitidy(port string, ready chan struct{}, done <-chan bool, err chan<- error) {
 
 	n := 0
 	for {
